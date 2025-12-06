@@ -28,6 +28,9 @@
 		83EA5AF72EE3CA3800C18905 /* TransactionItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA5AF62EE3CA3800C18905 /* TransactionItem.swift */; };
 		83EA5AF92EE3D9DF00C18905 /* ObservedScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA5AF82EE3D9DF00C18905 /* ObservedScrollView.swift */; };
 		83EA5AFB2EE3E06000C18905 /* Period.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA5AFA2EE3E06000C18905 /* Period.swift */; };
+		83EA5AFD2EE3F66A00C18905 /* RashodiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA5AFC2EE3F66A00C18905 /* RashodiView.swift */; };
+		83EA5B002EE4185B00C18905 /* AppDownloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA5AFF2EE4185B00C18905 /* AppDownloads.swift */; };
+		83EA5B022EE41A1100C18905 /* GraphType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA5B012EE41A1100C18905 /* GraphType.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,6 +56,9 @@
 		83EA5AF62EE3CA3800C18905 /* TransactionItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionItem.swift; sourceTree = "<group>"; };
 		83EA5AF82EE3D9DF00C18905 /* ObservedScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservedScrollView.swift; sourceTree = "<group>"; };
 		83EA5AFA2EE3E06000C18905 /* Period.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Period.swift; sourceTree = "<group>"; };
+		83EA5AFC2EE3F66A00C18905 /* RashodiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RashodiView.swift; sourceTree = "<group>"; };
+		83EA5AFF2EE4185B00C18905 /* AppDownloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDownloads.swift; sourceTree = "<group>"; };
+		83EA5B012EE41A1100C18905 /* GraphType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphType.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,6 +125,7 @@
 		83EA5ACE2EE33A3800C18905 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				83EA5AFF2EE4185B00C18905 /* AppDownloads.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -158,6 +165,7 @@
 			isa = PBXGroup;
 			children = (
 				83EA5ADE2EE35F9300C18905 /* OperaciiView.swift */,
+				83EA5AFC2EE3F66A00C18905 /* RashodiView.swift */,
 			);
 			path = Operacii;
 			sourceTree = "<group>";
@@ -194,6 +202,7 @@
 				83EA5AF02EE3AA1F00C18905 /* FinancialTegLevel.swift */,
 				83EA5AF42EE3C06300C18905 /* Transactions.swift */,
 				83EA5AFA2EE3E06000C18905 /* Period.swift */,
+				83EA5B012EE41A1100C18905 /* GraphType.swift */,
 			);
 			path = Enum;
 			sourceTree = "<group>";
@@ -244,6 +253,8 @@
 			);
 			mainGroup = 83EA5AAE2EE339E900C18905;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 83EA5AB82EE339E900C18905 /* Products */;
 			projectDirPath = "";
@@ -279,15 +290,18 @@
 				83EA5AE52EE3612A00C18905 /* AnalView.swift in Sources */,
 				83EA5AF92EE3D9DF00C18905 /* ObservedScrollView.swift in Sources */,
 				83EA5AEF2EE395FF00C18905 /* FinancialHealthGauge.swift in Sources */,
+				83EA5AFD2EE3F66A00C18905 /* RashodiView.swift in Sources */,
 				83EA5AE72EE3653D00C18905 /* HomeView.swift in Sources */,
 				83EA5AFB2EE3E06000C18905 /* Period.swift in Sources */,
 				83EA5ADB2EE35F3600C18905 /* GradientRingView.swift in Sources */,
+				83EA5B002EE4185B00C18905 /* AppDownloads.swift in Sources */,
 				83EA5ADF2EE35F9300C18905 /* OperaciiView.swift in Sources */,
 				83EA5AF52EE3C06300C18905 /* Transactions.swift in Sources */,
 				83EA5AF32EE3B30D00C18905 /* ZdorovieView.swift in Sources */,
 				83EA5AD12EE33A8200C18905 /* Consts.swift in Sources */,
 				83EA5ACA2EE339FC00C18905 /* ContentView.swift in Sources */,
 				83EA5AEA2EE3774700C18905 /* Double.swift in Sources */,
+				83EA5B022EE41A1100C18905 /* GraphType.swift in Sources */,
 				83EA5AD62EE3531400C18905 /* RootView.swift in Sources */,
 				83EA5AED2EE3901900C18905 /* FinancialHealthLevel.swift in Sources */,
 			);

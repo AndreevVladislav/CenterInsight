@@ -14,6 +14,8 @@ struct ZdorovieView: View {
     
     @State private var healthValue: Double = 100
     
+    @State private var graphType: GraphType = .donut
+    
     var body: some View {
         ZStack {
             Color.white.ignoresSafeArea()

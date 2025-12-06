@@ -15,6 +15,8 @@ struct OperaciiView: View {
     
     @State private var selection: Period = .month
     
+    @State private var openRashodi: Bool = false
+    
     var body: some View {
         ZStack {
             Color.white.ignoresSafeArea()
@@ -74,6 +76,9 @@ struct OperaciiView: View {
                                 RoundedRectangle(cornerRadius: 18)
                                     .fill(Color.black.opacity(0.12))
                             )
+                            .onTapGesture {
+                                openRashodi = true
+                            }
                             
                             VStack {
                                 Text("2000")
@@ -119,6 +124,10 @@ struct OperaciiView: View {
             }
             
             .ignoresSafeArea()
+            .sheet(isPresented: $openRashodi) {
+                RashodiView()
+                    .presentationDragIndicator(.visible)
+            }
             
             if(self.scrollOffset > 115) {
                 VStack {
