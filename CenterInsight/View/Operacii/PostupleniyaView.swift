@@ -1,5 +1,5 @@
 //
-//  RashodiView.swift
+//  PostupleniyaView.swift
 //  CenterInsight
 //
 //  Created by Vladislav Andreev on 06.12.2025.
@@ -9,16 +9,16 @@ import Foundation
 import SwiftUI
 import Charts
 
-struct RashodiView: View {
+struct PostupleniyaView: View {
     
     @State private var selection: Period = .month
     
-    @State private var graphType: GraphType = .donut
+    @State private var graphType: GraphType = .bar
     @State private var barSelection: String?
     @State private var pieSelection: Double?
     
     var appDownloads: [AppDownload] = [
-        .init(category: .food,      downloads: 12),
+        .init(category: .food,      downloads: 1),
         .init(category: .rent,      downloads: 1),
         .init(category: .shopping,  downloads: 5),
         .init(category: .transport, downloads: 8),
@@ -48,7 +48,7 @@ struct RashodiView: View {
                     VStack {
                         VStack(spacing: 0) {
                             VStack {
-                                Text("Расходы")
+                                Text("Поступления")
                                     .foregroundStyle(.white)
                                     .font(.system(size: 28, weight: .bold))
                                     .padding(.top, 40)
@@ -187,18 +187,18 @@ struct RashodiView: View {
     @ViewBuilder
     func ChartPopOverView(_ downloads: Double, _ month: String, _ isTitleView: Bool = false, _ isSelection: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("\(isTitleView && !isSelection ? "Все транзакции" : "Детали") ")
+            Text("\(isTitleView && !isSelection ? "Все" : "Все") транзакции")
                 .font(.title3)
                 .foregroundStyle(.gray)
 
             HStack(spacing: 4) {
                 Text(String(format: "%.0f", downloads))
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(.white)
+                    .font(.title3)
+                    .fontWeight(.semibold)
 
                 Text(month)
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(.white)
+                    .font(.title3)
+                    .textScale(.secondary)
             }
         }
         .padding(isTitleView ? [.horizontal] : [.all])
@@ -231,6 +231,6 @@ struct RashodiView: View {
 }
 
 #Preview {
-    RashodiView()
+    PostupleniyaView()
 }
 

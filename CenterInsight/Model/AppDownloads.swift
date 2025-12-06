@@ -40,13 +40,7 @@ extension [AppDownload] {
     }
 }
 
-var appDownloads: [AppDownload] = [
-    .init(category: .food,      downloads: 12),
-    .init(category: .rent,      downloads: 1),
-    .init(category: .shopping,  downloads: 5),
-    .init(category: .transport, downloads: 8),
-    .init(category: .misc,      downloads: 3)
-]
+
 
 extension Date {
     static func createDate(_ day: Int, _ month: Int, _ year: Int) -> Date {

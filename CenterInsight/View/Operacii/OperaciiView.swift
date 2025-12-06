@@ -17,6 +17,8 @@ struct OperaciiView: View {
     
     @State private var openRashodi: Bool = false
     
+    @State private var openPostupleniya: Bool = false
+    
     var body: some View {
         ZStack {
             Color.white.ignoresSafeArea()
@@ -95,6 +97,9 @@ struct OperaciiView: View {
                                 RoundedRectangle(cornerRadius: 18)
                                     .fill(Color.black.opacity(0.12))
                             )
+                            .onTapGesture {
+                                openPostupleniya = true
+                            }
                         }
                         .padding(.horizontal)
                         .opacity((self.scrollOffset > 115) ? 0 : 1)
@@ -128,6 +133,11 @@ struct OperaciiView: View {
                 RashodiView()
                     .presentationDragIndicator(.visible)
             }
+            .sheet(isPresented: $openPostupleniya) {
+                PostupleniyaView()
+                    .presentationDragIndicator(.visible)
+            }
+            
             
             if(self.scrollOffset > 115) {
                 VStack {

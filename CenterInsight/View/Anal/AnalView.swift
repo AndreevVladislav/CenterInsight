@@ -87,7 +87,7 @@ struct AnalView: View {
                                         .font(Font.system(size: 18, weight: .heavy))
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .multilineTextAlignment(.leading)
-                                    Text("денег всего")
+                                    Text("доход за месяц")
                                         .foregroundStyle(Consts.Colors.greyBack)
                                         .font(Font.system(size: 18, weight: .heavy))
                                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -172,7 +172,7 @@ struct AnalView: View {
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $openDenegVsego) {
-            EmptyView()
+            VsegoView()
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $openOstatok) {

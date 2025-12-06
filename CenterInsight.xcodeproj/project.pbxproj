@@ -31,6 +31,8 @@
 		83EA5AFD2EE3F66A00C18905 /* RashodiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA5AFC2EE3F66A00C18905 /* RashodiView.swift */; };
 		83EA5B002EE4185B00C18905 /* AppDownloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA5AFF2EE4185B00C18905 /* AppDownloads.swift */; };
 		83EA5B022EE41A1100C18905 /* GraphType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA5B012EE41A1100C18905 /* GraphType.swift */; };
+		83EA5B042EE4961900C18905 /* PostupleniyaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA5B032EE4961900C18905 /* PostupleniyaView.swift */; };
+		83EA5B062EE49F6900C18905 /* VsegoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA5B052EE49F6900C18905 /* VsegoView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,6 +61,8 @@
 		83EA5AFC2EE3F66A00C18905 /* RashodiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RashodiView.swift; sourceTree = "<group>"; };
 		83EA5AFF2EE4185B00C18905 /* AppDownloads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDownloads.swift; sourceTree = "<group>"; };
 		83EA5B012EE41A1100C18905 /* GraphType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphType.swift; sourceTree = "<group>"; };
+		83EA5B032EE4961900C18905 /* PostupleniyaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostupleniyaView.swift; sourceTree = "<group>"; };
+		83EA5B052EE49F6900C18905 /* VsegoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VsegoView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -166,6 +170,7 @@
 			children = (
 				83EA5ADE2EE35F9300C18905 /* OperaciiView.swift */,
 				83EA5AFC2EE3F66A00C18905 /* RashodiView.swift */,
+				83EA5B032EE4961900C18905 /* PostupleniyaView.swift */,
 			);
 			path = Operacii;
 			sourceTree = "<group>";
@@ -183,6 +188,7 @@
 			children = (
 				83EA5AE42EE3612A00C18905 /* AnalView.swift */,
 				83EA5AF22EE3B30D00C18905 /* ZdorovieView.swift */,
+				83EA5B052EE49F6900C18905 /* VsegoView.swift */,
 			);
 			path = Anal;
 			sourceTree = "<group>";
@@ -293,11 +299,13 @@
 				83EA5AFD2EE3F66A00C18905 /* RashodiView.swift in Sources */,
 				83EA5AE72EE3653D00C18905 /* HomeView.swift in Sources */,
 				83EA5AFB2EE3E06000C18905 /* Period.swift in Sources */,
+				83EA5B062EE49F6900C18905 /* VsegoView.swift in Sources */,
 				83EA5ADB2EE35F3600C18905 /* GradientRingView.swift in Sources */,
 				83EA5B002EE4185B00C18905 /* AppDownloads.swift in Sources */,
 				83EA5ADF2EE35F9300C18905 /* OperaciiView.swift in Sources */,
 				83EA5AF52EE3C06300C18905 /* Transactions.swift in Sources */,
 				83EA5AF32EE3B30D00C18905 /* ZdorovieView.swift in Sources */,
+				83EA5B042EE4961900C18905 /* PostupleniyaView.swift in Sources */,
 				83EA5AD12EE33A8200C18905 /* Consts.swift in Sources */,
 				83EA5ACA2EE339FC00C18905 /* ContentView.swift in Sources */,
 				83EA5AEA2EE3774700C18905 /* Double.swift in Sources */,
