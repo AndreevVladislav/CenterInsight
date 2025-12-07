@@ -10,6 +10,7 @@
 		83B3ED4E2EE4E72A00EB0E1A /* OstatokView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B3ED4D2EE4E72A00EB0E1A /* OstatokView.swift */; };
 		83B3ED502EE50DBF00EB0E1A /* CategoryLimit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B3ED4F2EE50DBF00EB0E1A /* CategoryLimit.swift */; };
 		83B3ED522EE5182C00EB0E1A /* CategoryBudget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B3ED512EE5182900EB0E1A /* CategoryBudget.swift */; };
+		83B3ED542EE583A200EB0E1A /* AnomalyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83B3ED532EE583A200EB0E1A /* AnomalyView.swift */; };
 		83EA5AC92EE339FC00C18905 /* CenterInsightApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA5AC62EE339FC00C18905 /* CenterInsightApp.swift */; };
 		83EA5ACA2EE339FC00C18905 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EA5AC72EE339FC00C18905 /* ContentView.swift */; };
 		83EA5ACB2EE339FC00C18905 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 83EA5AC52EE339FC00C18905 /* Assets.xcassets */; };
@@ -42,6 +43,7 @@
 		83B3ED4D2EE4E72A00EB0E1A /* OstatokView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OstatokView.swift; sourceTree = "<group>"; };
 		83B3ED4F2EE50DBF00EB0E1A /* CategoryLimit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryLimit.swift; sourceTree = "<group>"; };
 		83B3ED512EE5182900EB0E1A /* CategoryBudget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryBudget.swift; sourceTree = "<group>"; };
+		83B3ED532EE583A200EB0E1A /* AnomalyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnomalyView.swift; sourceTree = "<group>"; };
 		83EA5AB72EE339E900C18905 /* CenterInsight.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CenterInsight.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		83EA5AC52EE339FC00C18905 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		83EA5AC62EE339FC00C18905 /* CenterInsightApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CenterInsightApp.swift; sourceTree = "<group>"; };
@@ -168,6 +170,7 @@
 			isa = PBXGroup;
 			children = (
 				83EA5AE62EE3653D00C18905 /* HomeView.swift */,
+				83B3ED532EE583A200EB0E1A /* AnomalyView.swift */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -304,6 +307,7 @@
 				83EA5AC92EE339FC00C18905 /* CenterInsightApp.swift in Sources */,
 				83EA5AE22EE3606100C18905 /* PlanView.swift in Sources */,
 				83EA5AD82EE3539100C18905 /* TabRouter.swift in Sources */,
+				83B3ED542EE583A200EB0E1A /* AnomalyView.swift in Sources */,
 				83EA5AE52EE3612A00C18905 /* AnalView.swift in Sources */,
 				83EA5AF92EE3D9DF00C18905 /* ObservedScrollView.swift in Sources */,
 				83EA5AEF2EE395FF00C18905 /* FinancialHealthGauge.swift in Sources */,

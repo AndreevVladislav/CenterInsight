@@ -20,6 +20,12 @@ struct HomeView: View {
     
     @State private var last3: [TransactionResponse] = []
     
+    @State private var openAnomaly: Bool = false
+    
+    @State private var plannedPurchase: PlannedPurchase? = nil
+    
+    @State private var unreadCount: Int = 0
+    
     var body: some View {
         let level = FinancialHealthLevel.level(for: healthValue)
         
@@ -36,7 +42,7 @@ struct HomeView: View {
                             
                             ZStack {
                                 Button(action: {
-                                    
+                                    openAnomaly = true
                                 }) {
                                     VStack {
                                         Image(systemName: "bell")
@@ -50,19 +56,21 @@ struct HomeView: View {
                                     .cornerRadius(50)
                                     
                                 }
-                                VStack {
-                                    HStack {
-                                        Spacer()
-                                        ZStack {
-                                            Circle()
-                                                .foregroundStyle(.yellowTeg)
-                                                .frame(width: 18)
-                                            Text("3")
-                                                .foregroundStyle(.white)
-                                                .font(.system(size: 12, weight: .bold))
+                                if unreadCount != 0 {
+                                    VStack {
+                                        HStack {
+                                            Spacer()
+                                            ZStack {
+                                                Circle()
+                                                    .foregroundStyle(.yellowTeg)
+                                                    .frame(width: 18)
+                                                Text("\(unreadCount)")
+                                                    .foregroundStyle(.white)
+                                                    .font(.system(size: 12, weight: .bold))
+                                            }
                                         }
+                                        Spacer()
                                     }
-                                    Spacer()
                                 }
                             }
                             .frame(maxWidth: 50,maxHeight: 50)
@@ -169,22 +177,27 @@ struct HomeView: View {
                                     tabRouter.selected = 1
                                 }
                                 
-                                VStack {
-                                    Text("Планы")
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .padding(.leading)
-                                        .padding(.top)
-                                        .foregroundStyle(.black.opacity(0.6))
-                                    Text("тут будут планы")
-                                        .padding(.bottom)
+                                if let purchase = plannedPurchase {
+                                    
+                                    VStack {
+                                        Text("Планы")
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .padding(.leading)
+                                            .padding(.top)
+                                            .foregroundStyle(.black.opacity(0.6))
+                                        PlannedPurchaseCard(purchase: purchase)
+                                            .padding(.horizontal)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color.white)
+                                    .cornerRadius(16)
+                                    .padding(.top)
+                                    .padding(.bottom, 80)
+                                    .onTapGesture {
+                                        tabRouter.selected = 2
+                                    }
                                 }
-                                .frame(maxWidth: .infinity)
-                                .background(Color.white)
-                                .cornerRadius(16)
-                                .padding(.top)
-                                .onTapGesture {
-                                    tabRouter.selected = 2
-                                }
+                                
                                 
                             }
                         }
@@ -202,6 +215,10 @@ struct HomeView: View {
             .padding(.top, 300)
             
             
+        }
+        .sheet(isPresented: $openAnomaly) {
+            AnomalyView()
+                .presentationDragIndicator(.visible)
         }
         .onAppear {
             animTick &+= 1
@@ -235,6 +252,18 @@ struct HomeView: View {
                     print("Ошибка получения финансового здоровья:", error)
                 }
             }
+            
+            plannedPurchase = loadPlannedPurchase()
+            
+            Task {
+                do {
+                    let response = try await fetchAnomalies()
+                    self.unreadCount = response.unread_count   // <-- используем в UI
+                } catch {
+                    print("Ошибка загрузки:", error)
+                }
+            }
+            
         } // первый запуск при первом появлении
         .onChange(of: tabRouter.selected) { newValue in
             if newValue == 3 { animTick &+= 1 } // вкладка «Аналитика»
@@ -279,6 +308,26 @@ struct HomeView: View {
 
         let decoded = try JSONDecoder().decode(FinancialHealthResponse.self, from: data)
         return decoded
+    }
+    
+    private func fetchAnomalies(skip: Int = 0, limit: Int = 100) async throws -> AnomalyResponse {
+        guard let url = URL(string: "https://v487263.hosted-by-vdsina.com/api/v1/anomalies?skip=\(skip)&limit=\(limit)") else {
+            throw URLError(.badURL)
+        }
+        
+        let (data, response) = try await URLSession.shared.data(from: url)
+        
+        guard let http = response as? HTTPURLResponse,
+              200..<300 ~= http.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+        
+        let result = try JSONDecoder().decode(AnomalyResponse.self, from: data)
+        
+        // 🟦 Выводим количество непрочитанных уведомлений
+        print("Непрочитанных уведомлений: \(result.unread_count)")
+        
+        return result
     }
 }
 
