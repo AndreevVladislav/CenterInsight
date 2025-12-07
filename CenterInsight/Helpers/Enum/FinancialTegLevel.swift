@@ -24,7 +24,7 @@ enum FinancialTegLevel {
     var backgroundColor: Color {
         switch self {
         case .good:   return .green.opacity(0.25)
-        case .medium: return .yellow.opacity(0.30)
+        case .medium: return .yellow.opacity(0.2)
         case .bad:    return .red.opacity(0.25)
         }
     }
@@ -32,7 +32,7 @@ enum FinancialTegLevel {
     var textColor: Color {
         switch self {
         case .good:   return .green
-        case .medium: return .yellow.darker() // можно оставить .yellow
+        case .medium: return .yellow
         case .bad:    return .red
         }
     }

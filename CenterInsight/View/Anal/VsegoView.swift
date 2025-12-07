@@ -165,18 +165,16 @@ struct VsegoView: View {
                 .foregroundStyle(.gray)
 
             HStack(spacing: 4) {
-                Text(String(format: "%.0f ₽", downloads))
+                Text(downloads.rubFormatted())
                     .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(.black)
 
-//                Text(month)
-//                    .font(.system(size: 24, weight: .bold))
-//                    .foregroundStyle(.black)
             }
         }
         .padding(.all)
-        .background(Color.black.opacity(0.05), in: .rect(cornerRadius: 14))
         .frame(maxWidth: .infinity, alignment: .center)
+        .background(Color.black.opacity(0.05), in: .rect(cornerRadius: 14))
+        
     }
 }
 

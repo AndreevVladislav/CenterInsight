@@ -26,10 +26,45 @@ struct HomeView: View {
             VStack {
                 VStack(alignment: .leading) {
                     VStack {
-                        Text("Центр-инсайт")
-                            .foregroundStyle(.white)
-                            .font(.system(size: 28, weight: .bold))
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        HStack {
+                            Text("Центр-инсайт")
+                                .foregroundStyle(.white)
+                                .font(.system(size: 28, weight: .bold))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            ZStack {
+                                Button(action: {
+                                    
+                                }) {
+                                    VStack {
+                                        Image(systemName: "bell")
+                                            .foregroundStyle(.white)
+                                            .font(.system(size: 20, weight: .semibold))
+                                            .padding(8)
+                                    }
+                                    .background {
+                                        Color.black.opacity(0.1)
+                                    }
+                                    .cornerRadius(50)
+                                    
+                                }
+                                VStack {
+                                    HStack {
+                                        Spacer()
+                                        ZStack {
+                                            Circle()
+                                                .foregroundStyle(.yellowTeg)
+                                                .frame(width: 18)
+                                            Text("3")
+                                                .foregroundStyle(.white)
+                                                .font(.system(size: 12, weight: .bold))
+                                        }
+                                    }
+                                    Spacer()
+                                }
+                            }
+                            .frame(maxWidth: 50,maxHeight: 50)
+                        }
                         
                         VStack {
                             VStack {
@@ -90,7 +125,8 @@ struct HomeView: View {
                         
                         Spacer()
                     }
-                    .padding()
+                    .padding(.horizontal)
+                    .padding(.bottom)
                     
                 }
                 .frame(maxWidth: .infinity)
