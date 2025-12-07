@@ -58,7 +58,7 @@ extension AppDownload3 {
 struct OstatokView: View {
 
     // доходы и расходы за последние 6 месяцев (от старого к новому)
-    private let appDownloads: [AppDownload3] =
+    @State private var appDownloads: [AppDownload3] =
         AppDownload3.lastSixMonths(
             incomes:  [150_000, 160_000, 155_000, 170_000, 165_000, 180_000],
             expenses: [130_000, 120_000, 140_000, 150_000, 148_000, 200_000]
@@ -78,6 +78,10 @@ struct OstatokView: View {
     @State private var level = FinancialTegLevel.bad
     
     @State private var percent: Int = 0
+    
+    @State private var avg_monthly_expense: Double = 0
+    
+    @State private var incomeThisMonth: Double = 0
 
     var body: some View {
         ZStack {
@@ -220,6 +224,44 @@ struct OstatokView: View {
                 .padding(.top)
             }
         }
+        .onAppear {
+            Task {
+                do {
+                    let analytics = try await fetchMonthlyAnalytics()
+                    print("labels:", analytics.labels)
+                    print("incomes:", analytics.incomes)
+                    self.appDownloads = AppDownload3.lastSixMonths(
+                        incomes:  Array(analytics.incomes.dropFirst()),
+                        expenses: Array(analytics.expenses.dropFirst())
+                    )
+                    self.incomeThisMonth = analytics.incomes.last ?? 0
+                    print("expenses:", analytics.expenses)
+                    print("avg_monthly_expense:", analytics.avg_monthly_expense)
+                    self.avg_monthly_expense = analytics.avg_monthly_expense
+                } catch {
+                    print("Ошибка запроса monthly:", error)
+                }
+            }
+        }
+    }
+    
+    private func fetchMonthlyAnalytics() async throws -> MonthlyAnalyticsResponse {
+        let url = URL(string: "https://v487263.hosted-by-vdsina.com/api/v1/analytics/monthly")!
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue("application/json", forHTTPHeaderField: "Accept")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let http = response as? HTTPURLResponse,
+              http.statusCode == 200 else {
+            throw URLError(.badServerResponse)
+        }
+        
+        let decoder = JSONDecoder()
+        let result = try decoder.decode(MonthlyAnalyticsResponse.self, from: data)
+        return result
     }
 }
 

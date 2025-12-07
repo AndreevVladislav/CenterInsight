@@ -14,9 +14,11 @@ struct HomeView: View {
     
     @State private var animTick = 0  // увеличиваем — кольцо перезапускается
     
-    @State private var balance: Double = 9000.56
+    @State private var balance: Double = 0
     
-    @State private var healthValue: Double = 100
+    @State private var healthValue: Double = 0
+    
+    @State private var last3: [TransactionResponse] = []
     
     var body: some View {
         let level = FinancialHealthLevel.level(for: healthValue)
@@ -152,13 +154,12 @@ struct HomeView: View {
                                         .padding(.leading)
                                         .padding(.top)
                                         .foregroundStyle(.black.opacity(0.6))
-                                    TransactionItem()
-                                    Divider()
-                                        .padding(.horizontal)
-                                    TransactionItem()
-                                    Divider()
-                                        .padding(.horizontal)
-                                    TransactionItem()
+                                    ForEach(last3) { item in
+                                        TransactionItem(id: item.id, date: item.trx_date, type: item.type, amount: item.amount, category: item.category)
+                                        Divider()
+                                            .padding(.horizontal)
+
+                                    }
                                 }
                                 .frame(maxWidth: .infinity)
                                 .background(Color.white)
@@ -202,10 +203,82 @@ struct HomeView: View {
             
             
         }
-        .onAppear { animTick &+= 1 } // первый запуск при первом появлении
+        .onAppear {
+            animTick &+= 1
+            Task {
+                do {
+                    let balance = try await fetchBalance()
+                    print("Баланс:", balance.balance)
+                    self.balance = balance.balance
+                } catch {
+                    print("Ошибка запроса:", error)
+                }
+            }
+            
+            Task {
+                do {
+                    let last3 = try await fetchLastThreeTransactions()
+                    print(last3)
+                    self.last3 = last3
+                } catch {
+                    print("Ошибка:", error)
+                }
+            }
+            
+            Task {
+                do {
+                    let health = try await fetchHealthScore()
+                    print("Здоровье:", health.score)
+                    healthValue = Double(health.score)
+                    print("Статус:", health.status)
+                } catch {
+                    print("Ошибка получения финансового здоровья:", error)
+                }
+            }
+        } // первый запуск при первом появлении
         .onChange(of: tabRouter.selected) { newValue in
             if newValue == 3 { animTick &+= 1 } // вкладка «Аналитика»
         }
+        .onChange(of: healthValue) { newValue in
+            animTick &+= 1  
+        }
+    }
+    
+    private func fetchLastThreeTransactions() async throws -> [TransactionResponse] {
+        let url = URL(string: "https://v487263.hosted-by-vdsina.com/api/v1/transactions?skip=0&limit=3")!
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue("application/json", forHTTPHeaderField: "Accept")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let http = response as? HTTPURLResponse,
+              http.statusCode == 200 else {
+            throw URLError(.badServerResponse)
+        }
+        
+        return try JSONDecoder().decode([TransactionResponse].self, from: data)
+    }
+    
+    func fetchHealthScore() async throws -> FinancialHealthResponse {
+        guard let url = URL(string: "https://v487263.hosted-by-vdsina.com/api/v1/analytics/health") else {
+            throw URLError(.badURL)
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "accept")
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let http = response as? HTTPURLResponse,
+              200..<300 ~= http.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+
+        let decoded = try JSONDecoder().decode(FinancialHealthResponse.self, from: data)
+        return decoded
     }
 }
 
@@ -216,3 +289,40 @@ struct HomeView: View {
 }
 
 
+struct BalanceResponse: Decodable {
+    let balance: Double
+    let last_transaction_date: String?
+    let system_date: String
+}
+
+func fetchBalance() async throws -> BalanceResponse {
+    let url = URL(string: "https://v487263.hosted-by-vdsina.com/api/v1/balance")!
+    
+    var request = URLRequest(url: url)
+    request.httpMethod = "GET"
+    request.addValue("application/json", forHTTPHeaderField: "Accept")
+
+    let (data, response) = try await URLSession.shared.data(for: request)
+
+    guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+        throw URLError(.badServerResponse)
+    }
+
+    return try JSONDecoder().decode(BalanceResponse.self, from: data)
+}
+
+struct TransactionResponse: Identifiable, Codable, Equatable {
+    let amount: Double
+    let type: String
+    let trx_date: String
+    let id: Int
+    let category: String
+    let is_anomaly: Bool
+    let is_corrected: Bool
+}
+
+
+struct FinancialHealthResponse: Codable {
+    let score: Int      // 0–100
+    let status: String  // "Good", "Neutral", "Critical" и т.д.
+}

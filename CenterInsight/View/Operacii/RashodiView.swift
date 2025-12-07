@@ -158,7 +158,7 @@ struct RashodiView: View {
                             .frame(maxWidth: .infinity)
                             VStack {
                                 ForEach(0..<40) { index in
-                                    TransactionItem()
+//                                    TransactionItem()
                                 }
                             }
                             .padding()

@@ -11,20 +11,18 @@ import SwiftUI
 struct PlanView: View {
     
     @State private var openZdorovie: Bool = false
-    
     @State private var openDenegVsego: Bool = false
-    
     @State private var openOstatok: Bool = false
     
+    /// Только нужные категории (без Rent и Salary)
     @State private var categories: [CategoryBudget] = [
-        .init(title: "Еда",       systemImage: "basket.fill",  spent: 5600, limit: nil),
-        .init(title: "Шоппинг",   systemImage: "tag.fill",    spent: 5700, limit: nil),
-        .init(title: "Транспорт", systemImage: "bus.fill",    spent: 8500, limit: nil),
-        .init(title: "Прочее",    systemImage: "questionmark",spent: 3000, limit: nil)
+        .init(title: "Еда",       apiTitle: "Food",      systemImage: "basket.fill",   spent: 0, limit: nil),
+        .init(title: "Шоппинг",   apiTitle: "Shopping",  systemImage: "tag.fill",      spent: 0, limit: nil),
+        .init(title: "Транспорт", apiTitle: "Transport", systemImage: "bus.fill",      spent: 0, limit: nil),
+        .init(title: "Прочее",    apiTitle: "Misc",      systemImage: "questionmark",  spent: 0, limit: nil)
     ]
     
     @State private var activeCategoryIndex: Int? = nil
-    
     
     var body: some View {
         ZStack {
@@ -38,11 +36,13 @@ struct PlanView: View {
                     gradient: Gradient(colors: [.gradient2, .gradient1]),
                     startPoint: .trailing,
                     endPoint: .bottom
-                ).opacity(0.1)
-                    .frame(maxHeight: 200)
+                )
+                .opacity(0.1)
+                .frame(maxHeight: 200)
                 
             }
             .ignoresSafeArea()
+            
             ScrollView(showsIndicators: false) {
                 VStack {
                     Text("Планы")
@@ -51,21 +51,19 @@ struct PlanView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)
                         .padding(.bottom)
+                    
                     VStack {
                         VStack(spacing: 16) {
                             
-                            
-                            //Блок
+                            // Блок лимитов
                             VStack {
                                 VStack {
                                     HStack {
                                         VStack {
                                             Text("Лимиты на текущий месяц")
                                                 .foregroundStyle(Consts.Colors.greyBack)
-                                                .font(Font.system(size: 18, weight: .heavy))
+                                                .font(.system(size: 18, weight: .heavy))
                                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                                .multilineTextAlignment(.leading)
-                                            
                                         }
                                         Image(systemName: "dial.high.fill")
                                             .foregroundStyle(
@@ -78,9 +76,9 @@ struct PlanView: View {
                                             .font(.system(size: 30))
                                     }
                                     .padding(.horizontal)
+                                    
                                     ScrollView(.horizontal, showsIndicators: false) {
                                         HStack(spacing: 24) {
-                                            
                                             ForEach(categories.indices, id: \.self) { index in
                                                 let cat = categories[index]
                                                 CategoryLimitView(
@@ -100,11 +98,10 @@ struct PlanView: View {
                                 
                             }
                             .frame(maxWidth: .infinity)
-                            .background {
-                                Color.white
-                            }
+                            .background(Color.white)
                             .cornerRadius(24)
                             
+                            // Остальные блоки оставляем как у тебя
                             VStack {
                                 Button(action: {
                                     openZdorovie = true
@@ -113,10 +110,8 @@ struct PlanView: View {
                                         VStack {
                                             Text("Обязательные платежи")
                                                 .foregroundStyle(Consts.Colors.greyBack)
-                                                .font(Font.system(size: 18, weight: .heavy))
+                                                .font(.system(size: 18, weight: .heavy))
                                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                                .multilineTextAlignment(.leading)
-                                            
                                         }
                                         Image(systemName: "rublesign.gauge.chart.leftthird.topthird.rightthird")
                                             .foregroundStyle(
@@ -130,12 +125,9 @@ struct PlanView: View {
                                     }
                                     .padding()
                                 }
-                                
                             }
                             .frame(maxWidth: .infinity)
-                            .background {
-                                Color.white
-                            }
+                            .background(Color.white)
                             .cornerRadius(24)
                             
                             VStack {
@@ -146,10 +138,8 @@ struct PlanView: View {
                                         VStack {
                                             Text("Запланировать покупку")
                                                 .foregroundStyle(Consts.Colors.greyBack)
-                                                .font(Font.system(size: 18, weight: .heavy))
+                                                .font(.system(size: 18, weight: .heavy))
                                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                                .multilineTextAlignment(.leading)
-                                            
                                         }
                                         Image(systemName: "cart.fill")
                                             .foregroundStyle(
@@ -163,14 +153,10 @@ struct PlanView: View {
                                     }
                                     .padding()
                                 }
-                                
                             }
                             .frame(maxWidth: .infinity)
-                            .background {
-                                Color.white
-                            }
+                            .background(Color.white)
                             .cornerRadius(24)
-                            
                             
                         }
                         .padding()
@@ -211,7 +197,50 @@ struct PlanView: View {
                 LimitSheet(category: $categories[index])
             }
         }
+        // подгружаем бюджеты при первом появлении
+        .task {
+            await loadBudgets()
+        }
     }
+    
+    // MARK: - Загрузка бюджетов
+    
+    private func loadBudgets() async {
+        do {
+            let budgets = try await fetchBudgets()
+            
+            await MainActor.run {
+                // обновляем только те категории, что показаны в UI
+                for i in categories.indices {
+                    let apiTitle = categories[i].apiTitle
+                    if let backend = budgets.first(where: { $0.category == apiTitle }) {
+                        categories[i].spent = backend.spent_in_current_month
+                        categories[i].limit = backend.amount_limit > 0 ? backend.amount_limit : nil
+                    }
+                }
+            }
+        } catch {
+            print("Ошибка загрузки бюджетов:", error)
+        }
+    }
+}
+func fetchBudgets() async throws -> [BudgetResponse] {
+    guard let url = URL(string: "https://v487263.hosted-by-vdsina.com/api/v1/budgets") else {
+        throw URLError(.badURL)
+    }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "GET"
+    request.addValue("application/json", forHTTPHeaderField: "Accept")
+
+    let (data, response) = try await URLSession.shared.data(for: request)
+
+    guard let http = response as? HTTPURLResponse,
+          200..<300 ~= http.statusCode else {
+        throw URLError(.badServerResponse)
+    }
+
+    return try JSONDecoder().decode([BudgetResponse].self, from: data)
 }
 
 
@@ -286,7 +315,7 @@ struct LimitSheet: View {
                 
                 Slider(
                     value: $tempLimit,
-                    in: 0...maxValue,
+                    in: 0...10000,
                     step: 1
                 )
                 .onChange(of: tempLimit) { newValue in
@@ -305,8 +334,18 @@ struct LimitSheet: View {
             
             Button {
                 // если 0 или меньше — считаем, что лимита нет
-                category.limit = tempLimit > 0 ? tempLimit : nil
-                dismiss()
+                
+                Task {
+                    do {
+                        let result = try await setBudget(category: category.apiTitle, limit: tempLimit)
+                        print("Лимит установлен:", result)
+                        category.limit = tempLimit > 0 ? tempLimit : nil
+                        dismiss()
+                    } catch {
+                        print("Ошибка установки лимита:", error)
+                    }
+                }
+                
             } label: {
                 Text("Сохранить лимит")
                     .frame(maxWidth: .infinity)
@@ -332,4 +371,41 @@ struct LimitSheet: View {
         .presentationCornerRadius(24)
         .presentationBackground(.white)   // <- НЕ liquid glass, обычный белый фон
     }
+    
+    private func setBudget(category: String, limit: Double) async throws -> BudgetResponse {
+        guard let url = URL(string: "https://v487263.hosted-by-vdsina.com/api/v1/budgets") else {
+            throw URLError(.badURL)
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body = BudgetSetRequest(category: category, amount_limit: limit)
+        request.httpBody = try JSONEncoder().encode(body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              200..<300 ~= httpResponse.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+
+        return try JSONDecoder().decode(BudgetResponse.self, from: data)
+    }
 }
+
+struct BudgetSetRequest: Codable {
+    let category: String
+    let amount_limit: Double
+}
+
+struct BudgetResponse: Codable {
+    let category: String
+    let amount_limit: Double
+    let spent_in_current_month: Double
+    let percentage_used: Double
+    let remaining: Double
+}
+
+

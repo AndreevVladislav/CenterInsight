@@ -6,10 +6,10 @@
 //
 import Foundation
 
-struct CategoryBudget: Identifiable {
-    let id = UUID()
-    let title: String
-    let systemImage: String
-    var spent: Double
-    var limit: Double?
+struct CategoryBudget {
+    var title: String       // "Еда"
+    var apiTitle: String    // "Food"
+    var systemImage: String
+    var spent: Double       // потрачено в текущем месяце
+    var limit: Double?      // лимит (nil = без лимита)
 }

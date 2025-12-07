@@ -12,31 +12,33 @@ enum FinancialTegLevel {
     case good
     case medium
     case bad
-
+    
     var title: String {
         switch self {
-        case .good:   return "Хорошо"
-        case .medium: return "Уже неплохо"
-        case .bad:    return "Плохо"
+        case .good:   return "Всё ок"
+        case .medium: return "На грани"
+        case .bad:    return "Опасно"
         }
     }
-
-    var backgroundColor: Color {
-        switch self {
-        case .good:   return .green.opacity(0.25)
-        case .medium: return .yellow.opacity(0.2)
-        case .bad:    return .red.opacity(0.25)
-        }
-    }
-
+    
     var textColor: Color {
         switch self {
         case .good:   return .green
-        case .medium: return .yellow
+        case .medium: return .orange
         case .bad:    return .red
         }
     }
+    
+    var backgroundColor: Color {
+        switch self {
+        case .good:   return Color.green.opacity(0.15)
+        case .medium: return Color.orange.opacity(0.15)
+        case .bad:    return Color.red.opacity(0.15)
+        }
+    }
 }
+
+
 
 // — Можно добавить лёгкое «утемнение» желтому, если нужно
 extension Color {

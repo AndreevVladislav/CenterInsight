@@ -44,12 +44,17 @@ extension AppDownload2 {
 struct VsegoView: View {
 
     // Задаёшь доходы за последние месяцы (от старого к новому)
-    private let appDownloads: [AppDownload2] =
+    @State private var appDownloads: [AppDownload2] =
         AppDownload2.lastSixMonths(incomes: [
-            20000, 23000, 18000, 25000, 27000, 30000   // пример
+            0, 0, 0, 0, 0, 0   // пример
         ])
 
     @State private var barSelection: String?
+    
+    @State private var avg_monthly_expense: Double = 0
+    
+    @State private var incomeThisMonth: Double = 0
+    
 
     var body: some View {
         ZStack {
@@ -118,26 +123,27 @@ struct VsegoView: View {
                     .padding(.horizontal)
 
                     // Любые другие карточки ниже
+                    let status = monthStatus(income: incomeThisMonth, avgMonthlyExpense: avg_monthly_expense)
+                    let level = status.level
+
                     VStack {
                         VStack {
-                            Text("Хватит меньше чем на месяц")
+                            Text(status.text)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .font(.system(size: 24, weight: .bold))
-
-                            Text("При ваших средних тратах 200 000 ₽")
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .font(.system(size: 18, weight: .regular))
+                                .font(.system(size: 22, weight: .bold))
                             
-                            let level = FinancialTegLevel.bad
+                            Text("При ваших средних тратах \(avg_monthly_expense.rubFormatted())")
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .font(.system(size: 16, weight: .regular))
                             
                             HStack {
                                 Text(level.title)
-                                        .foregroundStyle(level.textColor)
-                                        .font(.system(size: 16, weight: .bold))
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(level.backgroundColor)
-                                        .cornerRadius(12)
+                                    .foregroundStyle(level.textColor)
+                                    .font(.system(size: 16, weight: .bold))
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(level.backgroundColor)
+                                    .cornerRadius(12)
                                 Spacer()
                             }
                         }
@@ -148,6 +154,22 @@ struct VsegoView: View {
                     .padding(.horizontal)
                 }
                 .padding(.top)
+            }
+        }
+        .onAppear {
+            Task {
+                do {
+                    let analytics = try await fetchMonthlyAnalytics()
+                    print("labels:", analytics.labels)
+                    print("incomes:", analytics.incomes)
+                    self.appDownloads = AppDownload2.lastSixMonths(incomes: Array(analytics.incomes.dropFirst()))
+                    self.incomeThisMonth = analytics.incomes.last ?? 0
+                    print("expenses:", analytics.expenses)
+                    print("avg_monthly_expense:", analytics.avg_monthly_expense)
+                    self.avg_monthly_expense = analytics.avg_monthly_expense
+                } catch {
+                    print("Ошибка запроса monthly:", error)
+                }
             }
         }
     }
@@ -175,6 +197,42 @@ struct VsegoView: View {
         .frame(maxWidth: .infinity, alignment: .center)
         .background(Color.black.opacity(0.05), in: .rect(cornerRadius: 14))
         
+    }
+    
+    private func fetchMonthlyAnalytics() async throws -> MonthlyAnalyticsResponse {
+        let url = URL(string: "https://v487263.hosted-by-vdsina.com/api/v1/analytics/monthly")!
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue("application/json", forHTTPHeaderField: "Accept")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let http = response as? HTTPURLResponse,
+              http.statusCode == 200 else {
+            throw URLError(.badServerResponse)
+        }
+        
+        let decoder = JSONDecoder()
+        let result = try decoder.decode(MonthlyAnalyticsResponse.self, from: data)
+        return result
+    }
+    
+    private func monthStatus(income: Double, avgMonthlyExpense: Double) -> (text: String, level: FinancialTegLevel) {
+        guard avgMonthlyExpense > 0 else {
+            // если нет данных по тратам — считаем нейтрально
+            return ("Недостаточно данных", .medium)
+        }
+        
+        let ratio = income / avgMonthlyExpense
+        
+        if ratio >= 1.1 {
+            return ("Хватит больше чем на месяц", .good)
+        } else if ratio >= 0.9 {
+            return ("Хватит ровно на месяц", .medium)
+        } else {
+            return ("Хватит меньше чем на месяц", .bad)
+        }
     }
 }
 

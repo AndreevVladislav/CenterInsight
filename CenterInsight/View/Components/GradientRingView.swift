@@ -11,7 +11,7 @@ import SwiftUI
 struct GradientRingView: View {
     var value: Double          // 0...100
     var lineWidth: CGFloat = 8
-    var duration: Double = 1.2
+    var duration: Double = 1.4
     var trigger: Int = 0       // 👈 внешний триггер перезапуска
 
     private let startOffset: CGFloat = 0.01

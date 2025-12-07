@@ -19,6 +19,12 @@ struct OperaciiView: View {
     
     @State private var openPostupleniya: Bool = false
     
+    @State private var summary: AnalyticsSummary?
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    
+    @State private var last100: [TransactionResponse] = []
+    
     var body: some View {
         ZStack {
             Color.white.ignoresSafeArea()
@@ -54,8 +60,15 @@ struct OperaciiView: View {
                                 .font(.system(size: 18, weight: .semibold))
                             Spacer()
                             CustomSegmentedControl(selection: $selection)
+                                .frame(width: 200)
                                 .onChange(of: selection) { newValue in
-                                    print("Выбран период в родителе: \(newValue.rawValue)")
+                                    Task {
+                                        await loadSummary(for: newValue)
+                                    }
+                                }
+                                .task {
+                                    // первый загруз при открытии экрана
+                                    await loadSummary(for: selection)
                                 }
                             .frame(width: 200)
                             
@@ -64,9 +77,9 @@ struct OperaciiView: View {
                         
                         HStack {
                             VStack {
-                                Text("2000")
+                                Text(summary?.expenses.rubFormatted() ?? "0")
                                     .foregroundStyle(.white)
-                                    .font(.system(size: 24, weight: .bold))
+                                    .font(.system(size: 22, weight: .bold))
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                 Text("Расходы")
                                     .foregroundStyle(.white.opacity(0.6))
@@ -79,13 +92,13 @@ struct OperaciiView: View {
                                     .fill(Color.black.opacity(0.12))
                             )
                             .onTapGesture {
-                                openRashodi = true
+//                                openRashodi = true
                             }
                             
                             VStack {
-                                Text("2000")
+                                Text(summary?.income.rubFormatted() ?? "0")
                                     .foregroundStyle(.white)
-                                    .font(.system(size: 24, weight: .bold))
+                                    .font(.system(size: 22, weight: .bold))
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                 Text("Поступления")
                                     .foregroundStyle(.white.opacity(0.6))
@@ -98,7 +111,7 @@ struct OperaciiView: View {
                                     .fill(Color.black.opacity(0.12))
                             )
                             .onTapGesture {
-                                openPostupleniya = true
+//                                openPostupleniya = true
                             }
                         }
                         .padding(.horizontal)
@@ -107,8 +120,14 @@ struct OperaciiView: View {
                     .padding(.bottom, 35)
                     .frame(maxWidth: .infinity)
                     VStack {
-                        ForEach(0..<40) { index in
-                            TransactionItem()
+                        Text("История")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading)
+                            .foregroundStyle(.black.opacity(0.6))
+                        ForEach(last100) { item in
+                            LazyVStack {
+                                TransactionItem(id: item.id, date: item.trx_date, type: item.type, amount: item.amount, category: item.category)
+                            }
                         }
                     }
                     .padding()
@@ -144,9 +163,9 @@ struct OperaciiView: View {
                     VStack {
                         HStack {
                             VStack {
-                                Text("2000")
+                                Text(summary?.expenses.rubFormatted() ?? "0")
                                     .foregroundStyle(.white)
-                                    .font(.system(size: 24, weight: .bold))
+                                    .font(.system(size: 22, weight: .bold))
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                 Text("Расходы")
                                     .foregroundStyle(.white.opacity(0.6))
@@ -158,11 +177,15 @@ struct OperaciiView: View {
                                 RoundedRectangle(cornerRadius: 18)
                                     .fill(Color.black.opacity(0.12))
                             )
+                            .onTapGesture {
+//                                openRashodi = true
+                            }
+                            
                             
                             VStack {
-                                Text("2000")
+                                Text(summary?.income.rubFormatted() ?? "0")
                                     .foregroundStyle(.white)
-                                    .font(.system(size: 24, weight: .bold))
+                                    .font(.system(size: 22, weight: .bold))
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                 Text("Поступления")
                                     .foregroundStyle(.white.opacity(0.6))
@@ -174,6 +197,9 @@ struct OperaciiView: View {
                                 RoundedRectangle(cornerRadius: 18)
                                     .fill(Color.black.opacity(0.12))
                             )
+                            .onTapGesture {
+//                                openPostupleniya = true
+                            }
                         }
                         .padding(.horizontal)
                         .padding(.bottom)
@@ -191,6 +217,68 @@ struct OperaciiView: View {
                 }
             }
         }
+        .onAppear {
+            Task {
+                do {
+                    let last100 = try await fetchLastThreeTransactions()
+                    print(last100)
+                    self.last100 = last100
+                } catch {
+                    print("Ошибка:", error)
+                }
+            }
+        }
+    }
+    
+    func loadSummary(for period: Period) async {
+            isLoading = true
+            errorMessage = nil
+            
+            do {
+                let url = URL(string: "https://v487263.hosted-by-vdsina.com/api/v1/analytics/summary?period=\(period.apiValue)")!
+                
+                var request = URLRequest(url: url)
+                request.httpMethod = "GET"
+                request.addValue("application/json", forHTTPHeaderField: "Accept")
+                
+                let (data, response) = try await URLSession.shared.data(for: request)
+                
+                guard let http = response as? HTTPURLResponse,
+                      http.statusCode == 200 else {
+                    throw URLError(.badServerResponse)
+                }
+                
+                let decoded = try JSONDecoder().decode(AnalyticsSummary.self, from: data)
+                
+                await MainActor.run {
+                    self.summary = decoded
+                    self.isLoading = false
+                }
+            } catch {
+                await MainActor.run {
+                    self.summary = nil
+                    self.isLoading = false
+                    self.errorMessage = "Ошибка загрузки данных"
+                    print("Analytics error:", error)
+                }
+            }
+        }
+    
+    private func fetchLastThreeTransactions() async throws -> [TransactionResponse] {
+        let url = URL(string: "https://v487263.hosted-by-vdsina.com/api/v1/transactions?skip=0&limit=100")!
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue("application/json", forHTTPHeaderField: "Accept")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let http = response as? HTTPURLResponse,
+              http.statusCode == 200 else {
+            throw URLError(.badServerResponse)
+        }
+        
+        return try JSONDecoder().decode([TransactionResponse].self, from: data)
     }
 }
 
@@ -231,5 +319,41 @@ struct CustomSegmentedControl: View {
             RoundedRectangle(cornerRadius: 18)
                 .fill(Color.black.opacity(0.12))
         )
+    }
+}
+
+struct AnalyticsSummary: Decodable {
+    let income: Double
+    let expenses: Double
+    // + добавь остальные поля, если есть
+}
+
+struct CorrectCategoryRequest: Codable {
+    let category: String
+}
+
+func correctTransactionCategory(id: Int, newCategory: String) async throws {
+    guard let url = URL(string: "https://v487263.hosted-by-vdsina.com/api/v1/transactions/\(id)/correct") else {
+        throw URLError(.badURL)
+    }
+    
+    var request = URLRequest(url: url)
+    request.httpMethod = "PATCH"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+    let body = CorrectCategoryRequest(category: newCategory)
+    request.httpBody = try JSONEncoder().encode(body)
+
+    let (_, response) = try await URLSession.shared.data(for: request)
+
+    guard let http = response as? HTTPURLResponse else {
+        throw URLError(.badServerResponse)
+    }
+
+    print("PATCH /correct response status:", http.statusCode)
+
+    if http.statusCode != 200 {
+        throw URLError(.badServerResponse)
     }
 }

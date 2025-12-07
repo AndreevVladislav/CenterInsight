@@ -19,6 +19,12 @@ struct AnalView: View {
     @State private var openDenegVsego: Bool = false
     
     @State private var openOstatok: Bool = false
+    
+    @State private var avg_monthly_expense: Double = 0
+    
+    @State private var incomeThisMonth: Double = 0
+    
+    @State private var expensesThisMonth: Double = 0
 
     var body: some View {
         ZStack {
@@ -89,14 +95,15 @@ struct AnalView: View {
                             
                             //Блок денег всего
                             VStack {
-                                let level = FinancialTegLevel.bad
+                                let status = monthStatus(income: incomeThisMonth, avgMonthlyExpense: avg_monthly_expense)
+                                let level = status.level
                                 Button(action: {
                                     openDenegVsego = true
                                 }) {
                                     HStack {
                                         VStack {
                                             
-                                            Text(balance.rubFormatted())
+                                            Text(incomeThisMonth.rubFormatted())
                                                 .foregroundStyle(Consts.Colors.greyBack)
                                                 .font(Font.system(size: 18, weight: .heavy))
                                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -131,14 +138,14 @@ struct AnalView: View {
                             
                             //Блок остаток от дохода
                             VStack {
-                                let level = FinancialTegLevel.good
+                                let level = calculateLevel(income: incomeThisMonth, expenses: expensesThisMonth)
                                 Button(action: {
                                     openOstatok = true
                                 }) {
                                     HStack {
                                         VStack {
                                             
-                                            Text(balance.rubFormatted())
+                                            Text((incomeThisMonth-expensesThisMonth).rubFormatted())
                                                 .foregroundStyle(Consts.Colors.greyBack)
                                                 .font(Font.system(size: 18, weight: .heavy))
                                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -164,7 +171,8 @@ struct AnalView: View {
                                             .font(.system(size: 40))
                                     }
                                     .padding()
-                                }                    }
+                                }
+                            }
                             .frame(maxWidth: .infinity)
                             .background {
                                 Color.white
@@ -203,10 +211,82 @@ struct AnalView: View {
             OstatokView()
                 .presentationDragIndicator(.visible)
         }
+        .onAppear {
+            Task {
+                do {
+                    let analytics = try await fetchMonthlyAnalytics()
+                    print("labels:", analytics.labels)
+                    print("incomes:", analytics.incomes)
+                    self.incomeThisMonth = analytics.incomes.last ?? 0
+                    self.expensesThisMonth = analytics.expenses.last ?? 0
+                    print("expenses:", analytics.expenses)
+                    print("avg_monthly_expense:", analytics.avg_monthly_expense)
+                    self.avg_monthly_expense = analytics.avg_monthly_expense
+                } catch {
+                    print("Ошибка запроса monthly:", error)
+                }
+            }
+        }
+    }
+    
+    private func fetchMonthlyAnalytics() async throws -> MonthlyAnalyticsResponse {
+        let url = URL(string: "https://v487263.hosted-by-vdsina.com/api/v1/analytics/monthly")!
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue("application/json", forHTTPHeaderField: "Accept")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let http = response as? HTTPURLResponse,
+              http.statusCode == 200 else {
+            throw URLError(.badServerResponse)
+        }
+        
+        let decoder = JSONDecoder()
+        let result = try decoder.decode(MonthlyAnalyticsResponse.self, from: data)
+        return result
+    }
+    
+    private func monthStatus(income: Double, avgMonthlyExpense: Double) -> (text: String, level: FinancialTegLevel) {
+        guard avgMonthlyExpense > 0 else {
+            // если нет данных по тратам — считаем нейтрально
+            return ("Недостаточно данных", .medium)
+        }
+        
+        let ratio = income / avgMonthlyExpense
+        
+        if ratio >= 1.1 {
+            return ("Хватит больше чем на месяц", .good)
+        } else if ratio >= 0.9 {
+            return ("Хватит ровно на месяц", .medium)
+        } else {
+            return ("Хватит меньше чем на месяц", .bad)
+        }
+    }
+    
+    func calculateLevel(income: Double, expenses: Double) -> FinancialTegLevel {
+        let leftover = income - expenses
+        let percent = leftover / max(income, 1) * 100
+        
+        if percent > 15 {
+            return .good
+        } else if percent > 5 {
+            return .medium
+        } else {
+            return .bad
+        }
     }
 }
 
 #Preview {
     ContentView()
         .environmentObject(TabRouter())
+}
+
+struct MonthlyAnalyticsResponse: Decodable {
+    let labels: [String]          // "2023-06", "2023-07", ...
+    let incomes: [Double]         // доходы по месяцам
+    let expenses: [Double]        // расходы по месяцам
+    let avg_monthly_expense: Double
 }
